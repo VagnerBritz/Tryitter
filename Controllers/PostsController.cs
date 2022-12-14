@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tryitter.Models;
+using static System.Net.WebRequestMethods;
 
 namespace Tryitter.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PostsController : ControllerBase
@@ -24,7 +27,8 @@ namespace Tryitter.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetPost()
         {
-            return await _context.Post.ToListAsync();
+            var id = int.Parse(HttpContext.User.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value);
+            return await _context.Post.Where(x => x.UserId == id).ToListAsync();
         }
 
         // GET: api/Posts/5
@@ -46,7 +50,7 @@ namespace Tryitter.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPost(int id, Post post)
         {
-            if (id != post.PostId)
+            if (id != post.Id)
             {
                 return BadRequest();
             }
@@ -80,7 +84,7 @@ namespace Tryitter.Controllers
             _context.Post.Add(post);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPost", new { id = post.PostId }, post);
+            return CreatedAtAction("GetPost", new { id = post.Id }, post);
         }
 
         // DELETE: api/Posts/5
@@ -101,7 +105,7 @@ namespace Tryitter.Controllers
 
         private bool PostExists(int id)
         {
-            return _context.Post.Any(e => e.PostId == id);
+            return _context.Post.Any(e => e.Id == id);
         }
     }
 }

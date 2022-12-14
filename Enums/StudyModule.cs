@@ -1,6 +1,6 @@
 ﻿namespace Tryitter.Enums
 {
-    enum StudyModule
+    public enum StudyModule
     {
         Fundamentos,
         FrontEnd,
